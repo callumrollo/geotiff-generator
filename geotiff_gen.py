@@ -23,7 +23,7 @@ def main():
 
 
 
-def tiff_maker(filename='', lon = [], lat = [], bathy = [], extent = [], bathy_folder_path = '', theme = '', min_depth = None):
+def tiff_maker(filename='', lon = [], lat = [], bathy = [], extent = [], bathy_folder_path = '', theme = '', min_depth = 0):
     """
     Interactive function for generating geotiffs from one of three sources. Can be called empty for
     interactive use or you can specify all the arguments you will nedd with the kwargs
@@ -94,13 +94,14 @@ def bathy_to_tiff(lon_vals, lat_vals, bathy_vals, filename, theme, min_depth):
     # Gradient in blue and green  channels from bathy
     g_pixels = 255*(np.abs(bathy_vals/np.nanmin(bathy_vals)))
     b_pixels = 255*(np.abs(bathy_vals/np.nanmin(bathy_vals)))
-
-    # Set bathy shallower than 10 m to red
-    r_pixels[np.logical_and(bathy_vals > -10, bathy_vals < 0)] = 255
-    g_pixels[np.logical_and(bathy_vals > -10, bathy_vals < 0)] = 0
-    b_pixels[np.logical_and(bathy_vals > -10, bathy_vals < 0)] = 0
     if not min_depth:
         min_depth = float(input("What depth (m) would you like the shallow warning color set? "))
+
+    # Set bathy shallower than user desired value to red
+    r_pixels[np.logical_and(bathy_vals > -np.abs(min_depth), bathy_vals < 0)] = 255
+    g_pixels[np.logical_and(bathy_vals > -np.abs(min_depth), bathy_vals < 0)] = 0
+    b_pixels[np.logical_and(bathy_vals > -np.abs(min_depth), bathy_vals < 0)] = 0
+
 
     if not theme:
         theme = input("Would you like the geotiff in a dark theme?\n"
