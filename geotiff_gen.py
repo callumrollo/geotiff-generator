@@ -71,11 +71,10 @@ def tiff_maker(filename='', lon = [], lat = [], bathy = [], extent = [], bathy_f
 def bathy_to_tiff(lon_vals, lat_vals, bathy_vals, filename, theme, min_depth):
     """
     The script that makes the geotiff from numpy arrays of lon, lat and bathy
-    :param lon_vals:
-    :param lat_vals:
-    :param bathy_vals:
-    :param filename:
-    :return:
+    :param lon_vals: 1D np.array of lon values
+    :param lat_vals: 1D np.array of lat values
+    :param bathy_vals: 2D np.array of bathy data, must conform with lon and lat
+    :param filename: base string for the filename, do not specify an extension
     """
     # Set all nans to height 0.0 m
     bathy_vals[np.isnan(bathy_vals)] = 0.0
@@ -146,8 +145,6 @@ def bathy_to_tiff(lon_vals, lat_vals, bathy_vals, filename, theme, min_depth):
     print('Made geotiff file at: '+str(Path(os.getcwd()) /(filename+'.tif')))
 
 
-
-
 def argnearest(items,pivot):
     near_item=min(items, key=lambda x: abs(x - pivot))
     for i in range(len(items)):
@@ -156,9 +153,10 @@ def argnearest(items,pivot):
 
 def gebco_subset(path_to_folder, extent):
     """
-
-    :param path_to_folder:
-    :param extent:
+    Extracs bathy data from a global GEBCO .nc file from an area specified by the use
+    :param path_to_folder: string of path to the folder, specified by user
+    :param extent: list with four items which are extent of desired geotiff [South, North, West, East]
+    e.g. [49. 50.5, -5, 2] (if using gebco or emodnet)
     :return: numpy arrays of lon, lat and bathymetry
     """
     print('Fetching GEBCO data...')
@@ -177,6 +175,7 @@ def gebco_subset(path_to_folder, extent):
 
     bath_lat_selec = gebco['elevation'][np.logical_and(all_lat>=lat_selec[0],all_lat<=lat_selec[-1])][:]
     bath_selec = bath_lat_selec[:,np.logical_and(all_lon>=lon_selec[0],all_lon<=lon_selec[-1])]
+    "print GEBCO bathy fetch successful"
     return np.array(lon_selec), np.array(lat_selec), np.array(bath_selec)
 
 
@@ -184,6 +183,10 @@ def emod_subset(path_to_files, extent):
     """
     Selects the EMODnet bathymetry tiles that cover the user defined area and
     combines them for a seamless bathymetry. Returns lon, lat and bathy.
+    :param path_to_files: string of path to the folder containing EMODnet .dtm files, specified by user
+    :param extent: list with four items which are extent of desired geotiff [South, North, West, East]
+    e.g. [49. 50.5, -5, 2] (if using gebco or emodnet)
+    :return: numpy arrays of lon, lat and bathymetry
     """
     tiles = Path(path_to_files).joinpath().glob("*.dtm")
     unorder_list = []
