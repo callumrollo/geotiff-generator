@@ -79,6 +79,9 @@ def bathy_to_tiff(lon_vals, lat_vals, bathy_vals, filename, theme, min_depth):
     # Set all nans to height 0.0 m
     bathy_vals[np.isnan(bathy_vals)] = 0.0
 
+    # set all land to height 0.0 m
+    bathy_vals[bathy_vals > 0.0] = 0.0
+
     # If needed, flip the y axis for writing the file to tif (grid must be in shape of map so starting from the NW corner)
     if lat_vals[-1] > lat_vals[0]:
         lat_vals = lat_vals[::-1]
@@ -94,19 +97,12 @@ def bathy_to_tiff(lon_vals, lat_vals, bathy_vals, filename, theme, min_depth):
     # Gradient in blue and green  channels from bathy
     g_pixels = 255*(np.abs(bathy_vals/np.nanmin(bathy_vals)))
     b_pixels = 255*(np.abs(bathy_vals/np.nanmin(bathy_vals)))
-    if not min_depth:
-        min_depth = float(input("What depth (m) would you like the shallow warning color set? "))
-
-    # Set bathy shallower than user desired value to red
-    r_pixels[np.logical_and(bathy_vals > -np.abs(min_depth), bathy_vals < 0)] = 255
-    g_pixels[np.logical_and(bathy_vals > -np.abs(min_depth), bathy_vals < 0)] = 0
-    b_pixels[np.logical_and(bathy_vals > -np.abs(min_depth), bathy_vals < 0)] = 0
-
 
     if not theme:
         theme = input("Would you like the geotiff in a dark theme?\n"
                       "[y]es please, I love dark themed UI elements\n"
-                     "[n]ah just melt my eyeballs out")
+                      "[n]ah just melt my eyeballs out\n"
+                      "[g]reyscale for true bathymetry")
     theme_color = 0
     if theme == 'n':
         theme_color = 255
@@ -116,9 +112,16 @@ def bathy_to_tiff(lon_vals, lat_vals, bathy_vals, filename, theme, min_depth):
     g_pixels[bathy_vals >= 0] = theme_color
     b_pixels[bathy_vals >= 0] = theme_color
 
-    #r_pixels[bathy_vals<-0.1] = 155
-    #g_pixels[bathy_vals<-0.1] = 155
-    #b_pixels[bathy_vals<-0.1] = 155
+    if theme =='g':
+        r_pixels = g_pixels = b_pixels = 255*(np.abs(bathy_vals/np.nanmin(bathy_vals)))
+    else:
+        if not min_depth:
+            min_depth = float(input("What depth (m) would you like the shallow warning color set? "))
+
+        # Set bathy shallower than user desired value to red
+        r_pixels[np.logical_and(bathy_vals > -np.abs(min_depth), bathy_vals < 0)] = 255
+        g_pixels[np.logical_and(bathy_vals > -np.abs(min_depth), bathy_vals < 0)] = 0
+        b_pixels[np.logical_and(bathy_vals > -np.abs(min_depth), bathy_vals < 0)] = 0
 
 
     # set geotransform
@@ -161,10 +164,11 @@ def gebco_subset(path_to_folder, extent):
     :return: numpy arrays of lon, lat and bathymetry
     """
     print('Fetching GEBCO data...')
-    path_to_gebco = Path(path_to_folder).joinpath().glob("*.nc")
-    for item in path_to_gebco:
-        gebco_file = str(item)
-    gebco = Dataset(gebco_file, "r", format="NETCDF4")
+    path_to_gebco = list(Path(path_to_folder).joinpath().glob("*.nc"))
+    if not path_to_gebco:
+        print('No netcdf files found in supplied folder. Aborting')
+        exit(1)
+    gebco = Dataset(path_to_gebco[0], "r", format="NETCDF4")
     all_lat = gebco['lat'][:]
     all_lon = gebco['lon'][:]
 
@@ -190,6 +194,9 @@ def emod_subset(path_to_files, extent):
     :return: numpy arrays of lon, lat and bathymetry
     """
     tiles = Path(path_to_files).joinpath().glob("*.dtm")
+    if not list(tiles):
+        print('No netcdf files found in supplied folder. Aborting')
+        exit(1)
     unorder_list = []
     for item in tiles:
         unorder_list.append(str(item))
