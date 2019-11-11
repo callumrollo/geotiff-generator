@@ -57,12 +57,12 @@ def tiff_maker(filename='', lon = [], lat = [], bathy = [], extent = [], bathy_f
         if bathy_folder_path:
             gebco_path = bathy_folder_path
         else:
-            gebco_path = input("Enter the path to the folder with your GEBCO netcdf (something like GEBCO_2014_2D.nc)")
+            gebco_path = input(r"Enter the path to the folder with your GEBCO netcdf (something like GEBCO_2014_2D.nc)")
         lon, lat, bathy = gebco_subset(gebco_path, extent)
         bathy_to_tiff(lon, lat, bathy, filename, theme, min_depth)
         return
     if bathy_selec.lower() == 'e':
-        emod_path = input("Enter the path to the folder with your emodnet file(s) (E3.dtm etc)")
+        emod_path = input(r"Enter the path to the folder with your emodnet file(s) (E3.dtm etc)")
         lon, lat, bathy = emod_subset(emod_path, extent)
         bathy_to_tiff(lon, lat, bathy, filename, theme, min_depth)
         return
@@ -194,7 +194,8 @@ def emod_subset(path_to_files, extent):
     :return: numpy arrays of lon, lat and bathymetry
     """
     tiles = Path(path_to_files).joinpath().glob("*.dtm")
-    if not list(tiles):
+    tiles_check = Path(path_to_files).joinpath().glob("*.dtm")
+    if not list(tiles_check):
         print('No netcdf files found in supplied folder. Aborting')
         exit(1)
     unorder_list = []
