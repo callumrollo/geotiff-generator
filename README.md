@@ -16,4 +16,22 @@ The script defaults to interactive mode asking you what geographical area you wi
 
 You can supply your own lon, lat and bathy as numpy arrays or point the script to netcdf bathymetry files you have downloaded from [GEBCO](https://www.gebco.net/data_and_products/gridded_bathymetry_data/) or [EMODnet](https://portal.emodnet-bathymetry.eu/).
 
-The script is very basic and be easily customised. Currently two colourpalettes are offered for the bathymap. I have not implemented a jet style colourmap. Please don't do it.
+The script is very basic and be easily customised. Currently three colourpalettes are offered for the bathymap.
+
+### Known Issues
+
+##### PROJ: proj_create_from_database: Cannot find proj.db
+
+Python can't find the database of projections it needs to georefrence the tiff. This is a paths issue.
+
+**Solutions:**
+
+In linux I suggest appending anaconda3/envs/geotiff-generator/bin to your path in your shell rc file:
+
+PATH=$PATH:/home/username/anaconda3/envs/geotiff-generator/bin
+
+In Windows find the path (search for proj.db in your Anaconda3 folder) and append it to the path in your python console with:
+
+setx PATH %PATH%;path-to-your-proj-folder
+
+Changing paths like this can break your computer though so take care. 
