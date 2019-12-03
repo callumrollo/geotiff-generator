@@ -43,27 +43,27 @@ def tiff_maker(filename='', lon = [], lat = [], bathy = [], extent = [], bathy_f
         return
     if not extent:
         extent = []
-        extent.append(float(input("Enter the southern limit of your desired bathy")))
-        extent.append(float(input("Enter the northern limit of your desired bathy")))
-        extent.append(float(input("Enter the western limit of your desired bathy")))
-        extent.append(float(input("Enter the eastern limit of your desired bathy")))
+        extent.append(float(input("Enter the southern limit of your desired bathy ")))
+        extent.append(float(input("Enter the northern limit of your desired bathy ")))
+        extent.append(float(input("Enter the western limit of your desired bathy ")))
+        extent.append(float(input("Enter the eastern limit of your desired bathy ")))
 
 
-    bathy_selec = input("What bathy are you using? [g]ebco, [e]modnet or [o]ther")
+    bathy_selec = input("What bathy are you using? [g]ebco, [e]modnet or [o]ther ")
     if bathy_selec.lower() == 'o':
         print("call  tiff_maker with your lon, lat and bathy arrays\n"
-              "e.g. tiff_generator('my_cool_tiff_pic', lon=lon_array, lat=lat_array, bathy=bathy_array)")
+              "e.g. tiff_generator(filename='my_cool_tiff_pic', lon=<lon_array>, lat=<lat_array>, bathy=<bathy_array>)")
         return
     if bathy_selec.lower() == 'g':
         if bathy_folder_path:
             gebco_path = bathy_folder_path
         else:
-            gebco_path = input(r"Enter the path to the folder with your GEBCO netcdf (something like GEBCO_2014_2D.nc)")
+            gebco_path = input(r"Enter the path to the folder with your GEBCO netcdf (something like GEBCO_2014_2D.nc) ")
         lon, lat, bathy = gebco_subset(gebco_path, extent)
         bathy_to_tiff(lon, lat, bathy, filename, theme, min_depth)
         return
     if bathy_selec.lower() == 'e':
-        emod_path = input(r"Enter the path to the folder with your emodnet file(s) (E3.dtm etc)")
+        emod_path = input(r"Enter the path to the folder with your emodnet file(s) (E3.dtm etc) ")
         lon, lat, bathy = emod_subset(emod_path, extent)
         bathy_to_tiff(lon, lat, bathy, filename, theme, min_depth)
         return
@@ -168,7 +168,7 @@ def argnearest(items,pivot):
 
 def gebco_subset(path_to_folder, extent):
     """
-    Extracs bathy data from a global GEBCO .nc file from an area specified by the use
+    Extracts bathy data from a global GEBCO .nc file from an area specified by the use
     :param path_to_folder: string of path to the folder, specified by user
     :param extent: list with four items which are extent of desired geotiff [South, North, West, East]
     e.g. [49. 50.5, -5, 2] (if using gebco or emodnet)
@@ -177,7 +177,7 @@ def gebco_subset(path_to_folder, extent):
     print('Fetching GEBCO data...')
     path_to_gebco = list(Path(path_to_folder).joinpath().glob("*.nc"))
     if not path_to_gebco:
-        print('No netcdf files found in supplied folder. Aborting')
+        print('No netcdf files found in supplied folder. Check it is a complete folder path (not a file). Aborting')
         exit(1)
     gebco = Dataset(path_to_gebco[0], "r", format="NETCDF4")
     all_lat = gebco['lat'][:]
@@ -207,7 +207,7 @@ def emod_subset(path_to_files, extent):
     tiles = Path(path_to_files).joinpath().glob("*.dtm")
     tiles_check = Path(path_to_files).joinpath().glob("*.dtm")
     if not list(tiles_check):
-        print('No netcdf files found in supplied folder. Aborting')
+        print('No netcdf files found in supplied folder. Check that it is a complete folder path (not a file). Aborting')
         exit(1)
     unorder_list = []
     for item in tiles:
