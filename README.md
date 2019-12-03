@@ -22,7 +22,7 @@ The script is very basic and can be easily customised. Currently three colourpal
 
 ### Known Issues
 
-##### PROJ: proj_create_from_database: Cannot find proj.db
+##### 1. PROJ: proj_create_from_database: Cannot find proj.db
 
 Python can't find the database of projections it needs to georefrence the tiff. This is a paths issue and indicates theat GDAL has not been installed properly
 
@@ -36,4 +36,8 @@ In Windows find the path (search for proj.db in your Anaconda3 folder) and appen
 
 setx PATH %PATH%;path-to-your-proj-folder
 
-**Altering teh PATH can have severe unintended consequencess** so take care. 
+**Altering the PATH can have severe unintended consequencess** so take care. 
+
+##### 2. ERROR 1: PROJ: proj_create_from_database: Open of /home/anaconda3/envs/geotiff-generator/share/proj failed
+
+If using Pycharm the above error is sometimes generated. Not sure why this happens, running the file from the comand line or another IDE fixed it for me.
