@@ -13,7 +13,9 @@ This script uses coarse, often outdated bathymetric data and does **not** produc
 
 ### How to use the script:
 
-Install the packages listed in the environment.yml file then run the script with your Python interpreter of choice.
+Install the packages listed in the environment.yml file (the easiset way is to [create an environment with Anaconda](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html)) then run the script `geotiff_gen.py` with your Python interpreter of choice.
+
+If you're unsure how to do this, check out the interactive demo with the Binder link above
 
 The script defaults to interactive mode asking you what geographical area you wish to plot and where your bathy data is stored. You can specify most of the relevant arguments by passing them directly to the function `tiff_maker`.
 
@@ -24,6 +26,7 @@ The script is very basic and can be easily customised. Currently three colourpal
 --------------
 
 ### Known Issues
+#### These all stem from the installation of [gdal](https://gdal.org/) and how these tools are added to the PATH
 
 ##### 1. PROJ: proj_create_from_database: Cannot find proj.db
 
