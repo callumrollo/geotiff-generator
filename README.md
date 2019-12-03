@@ -13,7 +13,7 @@ This script uses coarse, often outdated bathymetric data and does **not** produc
 
 ### How to use the script:
 
-Install the packages listed in the environment.yml file (the easiset way is to [create an environment with Anaconda](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html)) then run the script `geotiff_gen.py` with your Python interpreter of choice.
+Install the packages listed in the environment.yml file (the easiset way is to [create an environment with Anaconda](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file)) then run the script `geotiff_gen.py` with your Python interpreter of choice.
 
 If you're unsure how to do this, check out the interactive demo with the Binder link above
 
