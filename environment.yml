@@ -2,9 +2,11 @@ name: geotiff-generator
 channels:
    - conda-forge
 dependencies:
-   - python=3.7
+   - python
    - numpy
    - pandas
    - xarray
    - netcdf4
    - gdal
+   - jupyter
+   - ipython
