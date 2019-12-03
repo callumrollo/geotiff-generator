@@ -11,11 +11,13 @@ The author is a PhD student not a seafarer. Consult your local harbourmaster for
 
 This script uses coarse, often outdated bathymetric data and does **not** produce navigational charts. No accuracy is guaranteed or responsibility accepted for any uses or misuses of this software.
 
-### How to use the script:
+### How to use geotiff generator:
+1. Clone/download this repo with the green button
+2. Install the packages listed in the environment.yml file (the easiset way is to [create an environment with Anaconda](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file)) 
+3. Activate this environment
+4. You can run the script `geotiff_gen.py` from a Python prompt or launch jupyter notebook and open the `demo-try-me.ipynb`
 
-Install the packages listed in the environment.yml file (the easiset way is to [create an environment with Anaconda](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file)) then run the script `geotiff_gen.py` with your Python interpreter of choice.
-
-If you're unsure how to do this, check out the interactive demo with the Binder link above
+If you're unsure how to do either of these, you can check out the interactive demo with the Binder link above.
 
 The script defaults to interactive mode asking you what geographical area you wish to plot and where your bathy data is stored. You can specify most of the relevant arguments by passing them directly to the function `tiff_maker`.
 
