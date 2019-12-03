@@ -38,15 +38,16 @@ def tiff_maker(filename='', lon = [], lat = [], bathy = [], extent = [], bathy_f
     """
     if not filename:
         filename = input("Enter a name for your bathymetry geotiff ")
+    if len(lon) != 0:
+        bathy_to_tiff(lon, lat, bathy, filename, theme, min_depth)
+        return
     if not extent:
         extent = []
         extent.append(float(input("Enter the southern limit of your desired bathy")))
         extent.append(float(input("Enter the northern limit of your desired bathy")))
         extent.append(float(input("Enter the western limit of your desired bathy")))
         extent.append(float(input("Enter the eastern limit of your desired bathy")))
-    if len(lon) != 0:
-        bathy_to_tiff(lon, lat, bathy, filename, theme, min_depth)
-        return
+
 
     bathy_selec = input("What bathy are you using? [g]ebco, [e]modnet or [o]ther")
     if bathy_selec.lower() == 'o':
@@ -95,35 +96,45 @@ def bathy_to_tiff(lon_vals, lat_vals, bathy_vals, filename, theme, min_depth):
     r_pixels = np.zeros(image_size, dtype=np.uint8)
 
     # Gradient in blue and green  channels from bathy
-    g_pixels = 255*(np.abs(bathy_vals/np.nanmin(bathy_vals)))
-    b_pixels = 255*(np.abs(bathy_vals/np.nanmin(bathy_vals)))
+    g_pixels = 255*(1-np.abs(bathy_vals/np.nanmin(bathy_vals)))
+    b_pixels = 255*(1-np.abs(bathy_vals/np.nanmin(bathy_vals)))
 
     if not theme:
-        theme = input("Would you like the geotiff in a dark theme?\n"
-                      "[y]es please, I love dark themed UI elements\n"
-                      "[n]ah just melt my eyeballs out\n"
-                      "[g]reyscale for true bathymetry")
-    theme_color = 0
+        print("Would you like the geotiff in a dark theme?\n"
+              "[y]es please, I love dark themed UI elements\n"
+              "[n]ah just melt my eyeballs out\n"
+              "[g]reyscale for true bathymetry")
+        while True:
+            theme = input("")
+            if theme.lower() not in ('y', 'n', 'g'):
+                print("\nPlease enter y, n or g\n")
+            else:
+                break
+
+    theme_color = [0, 80, 0, 120]
     if theme == 'n':
-        theme_color = 255
+        theme_color = [255, 255, 255, 255]
+    # Set land to theme color
+    r_pixels[bathy_vals >= 0] = theme_color[0]
+    g_pixels[bathy_vals >= 0] = theme_color[1]
+    b_pixels[bathy_vals >= 0] = theme_color[2]
 
-    # Set land to black or white as desired
-    r_pixels[bathy_vals >= 0] = theme_color
-    g_pixels[bathy_vals >= 0] = theme_color
-    b_pixels[bathy_vals >= 0] = theme_color
-
+    # Set all heights on a greyscale for true scaled bathymetry and topography
     if theme =='g':
         r_pixels = g_pixels = b_pixels = 255*(np.abs(bathy_vals/np.nanmin(bathy_vals)))
     else:
         if not min_depth:
-            min_depth = float(input("What depth (m) would you like the shallow warning color set? "))
+            print("What depth (m) would you like the shallow warning red set? (0 for no shallow warning) ")
+            min_depth = float(input(""))
 
-        # Set bathy shallower than user desired value to red
-        r_pixels[np.logical_and(bathy_vals > -np.abs(min_depth), bathy_vals < 0)] = 255
+
+
+        # Set bathy shallower than user desired value to red (intensity depends on theme chosen)
+        r_pixels[np.logical_and(bathy_vals > -np.abs(min_depth), bathy_vals < 0)] = theme_color[3]
         g_pixels[np.logical_and(bathy_vals > -np.abs(min_depth), bathy_vals < 0)] = 0
         b_pixels[np.logical_and(bathy_vals > -np.abs(min_depth), bathy_vals < 0)] = 0
 
-
+    print("Generating geotiff...")
     # set geotransform
     nx = image_size[1]
     ny = image_size[0]
@@ -146,7 +157,7 @@ def bathy_to_tiff(lon_vals, lat_vals, bathy_vals, filename, theme, min_depth):
     dst_ds.GetRasterBand(3).WriteArray(b_pixels)   # write b-band to the raster
     dst_ds.FlushCache()                     # write to disk
     dst_ds = None                           # clean up
-    print('Made geotiff file at: '+str(Path(os.getcwd()) /(filename+'.tif')))
+    print('Made geotiff file at: '+str(Path(os.getcwd()) / (filename+'.tif')))
 
 
 def argnearest(items,pivot):
