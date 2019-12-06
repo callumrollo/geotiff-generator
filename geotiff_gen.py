@@ -13,7 +13,6 @@ import pandas as pd
 import xarray as xr
 from netCDF4 import Dataset
 import copy
-import glob
 from pathlib import Path
 from osgeo import gdal, osr
 

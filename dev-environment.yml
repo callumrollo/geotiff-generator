@@ -1,0 +1,13 @@
+name: geotiff-test
+channels:
+   - conda-forge
+dependencies:
+   - python=3.7
+   - numpy
+   - pandas
+   - xarray
+   - netcdf4
+   - gdal
+   - jupyter
+   - ipython
+   - pytest
