@@ -17,13 +17,12 @@ import glob
 from pathlib import Path
 from osgeo import gdal, osr
 
+
 def main():
     tiff_maker()
 
 
-
-
-def tiff_maker(filename='', lon = [], lat = [], bathy = [], extent = [], bathy_folder_path = '', theme = '', min_depth = 0):
+def tiff_maker(filename='', lon=[], lat=[], bathy=[], extent=[], bathy_folder_path='', theme='', min_depth=0):
     """
     Interactive function for generating geotiffs from one of three sources. Can be called empty for
     interactive use or you can specify all the arguments you will nedd with the kwargs
@@ -48,7 +47,6 @@ def tiff_maker(filename='', lon = [], lat = [], bathy = [], extent = [], bathy_f
         extent.append(float(input("Enter the western limit of your desired bathy ")))
         extent.append(float(input("Enter the eastern limit of your desired bathy ")))
 
-
     bathy_selec = input("What bathy are you using? [g]ebco, [e]modnet or [o]ther ")
     if bathy_selec.lower() == 'o':
         print("call  tiff_maker with your lon, lat and bathy arrays\n"
@@ -58,7 +56,8 @@ def tiff_maker(filename='', lon = [], lat = [], bathy = [], extent = [], bathy_f
         if bathy_folder_path:
             gebco_path = bathy_folder_path
         else:
-            gebco_path = input(r"Enter the path to the folder with your GEBCO netcdf (something like GEBCO_2014_2D.nc) ")
+            gebco_path = input(
+                r"Enter the path to the folder with your GEBCO netcdf (something like GEBCO_2014_2D.nc) ")
         lon, lat, bathy = gebco_subset(gebco_path, extent)
         bathy_to_tiff(lon, lat, bathy, filename, theme, min_depth)
         return
@@ -86,18 +85,17 @@ def bathy_to_tiff(lon_vals, lat_vals, bathy_vals, filename, theme, min_depth):
     # If needed, flip the y axis for writing the file to tif (grid must be in shape of map so starting from the NW corner)
     if lat_vals[-1] > lat_vals[0]:
         lat_vals = lat_vals[::-1]
-        bathy_vals = bathy_vals[::-1,:]
-
+        bathy_vals = bathy_vals[::-1, :]
 
     #  Initialize the image
-    image_size = (len(lat_vals),len(lon_vals))
+    image_size = (len(lat_vals), len(lon_vals))
 
     #  Create red channel, starts set to 0
     r_pixels = np.zeros(image_size, dtype=np.uint8)
 
     # Gradient in blue and green  channels from bathy
-    g_pixels = 255*(1-np.abs(bathy_vals/np.nanmin(bathy_vals)))
-    b_pixels = 255*(1-np.abs(bathy_vals/np.nanmin(bathy_vals)))
+    g_pixels = 255 * (1 - np.abs(bathy_vals / np.nanmin(bathy_vals)))
+    b_pixels = 255 * (1 - np.abs(bathy_vals / np.nanmin(bathy_vals)))
 
     if not theme:
         print("Would you like the geotiff in a dark theme?\n"
@@ -120,14 +118,12 @@ def bathy_to_tiff(lon_vals, lat_vals, bathy_vals, filename, theme, min_depth):
     b_pixels[bathy_vals >= 0] = theme_color[2]
 
     # Set all heights on a greyscale for true scaled bathymetry and topography
-    if theme =='g':
-        r_pixels = g_pixels = b_pixels = 255*(np.abs(bathy_vals/np.nanmin(bathy_vals)))
+    if theme == 'g':
+        r_pixels = g_pixels = b_pixels = 255 * (np.abs(bathy_vals / np.nanmin(bathy_vals)))
     else:
         if not min_depth:
             print("What depth (m) would you like the shallow warning red set? (0 for no shallow warning) ")
             min_depth = float(input(""))
-
-
 
         # Set bathy shallower than user desired value to red (intensity depends on theme chosen)
         r_pixels[np.logical_and(bathy_vals > -np.abs(min_depth), bathy_vals < 0)] = theme_color[3]
@@ -145,26 +141,26 @@ def bathy_to_tiff(lon_vals, lat_vals, bathy_vals, filename, theme, min_depth):
 
     # create the 3-band raster file
 
-    dst_ds = gdal.GetDriverByName('GTiff').Create(filename+'.tif', nx, ny, 3, gdal.GDT_Byte)
+    dst_ds = gdal.GetDriverByName('GTiff').Create(filename + '.tif', nx, ny, 3, gdal.GDT_Byte)
+
+    srs = osr.SpatialReference()  # establish encoding
+    srs.ImportFromEPSG(4326)  # Import the WGS84 datum
+    dst_ds.SetGeoTransform(geotransform)  # specify coords
+    dst_ds.SetProjection(srs.ExportToWkt())  # export coords to file
+    dst_ds.GetRasterBand(1).WriteArray(r_pixels)  # write r-band to the raster
+    dst_ds.GetRasterBand(2).WriteArray(g_pixels)  # write g-band to the raster
+    dst_ds.GetRasterBand(3).WriteArray(b_pixels)  # write b-band to the raster
+    dst_ds.FlushCache()  # write to disk
+    dst_ds = None  # clean up
+    print('Made geotiff file at: ' + str(Path(os.getcwd()) / (filename + '.tif')))
 
 
-    srs = osr.SpatialReference()            # establish encoding
-    srs.ImportFromEPSG(4326)                # Import the WGS84 datum
-    dst_ds.SetGeoTransform(geotransform)    # specify coords
-    dst_ds.SetProjection(srs.ExportToWkt()) # export coords to file
-    dst_ds.GetRasterBand(1).WriteArray(r_pixels)   # write r-band to the raster
-    dst_ds.GetRasterBand(2).WriteArray(g_pixels)   # write g-band to the raster
-    dst_ds.GetRasterBand(3).WriteArray(b_pixels)   # write b-band to the raster
-    dst_ds.FlushCache()                     # write to disk
-    dst_ds = None                           # clean up
-    print('Made geotiff file at: '+str(Path(os.getcwd()) / (filename+'.tif')))
-
-
-def argnearest(items,pivot):
-    near_item=min(items, key=lambda x: abs(x - pivot))
+def argnearest(items, pivot):
+    near_item = min(items, key=lambda x: abs(x - pivot))
     for i in range(len(items)):
-        if items[i]==near_item:
+        if items[i] == near_item:
             return i
+
 
 def gebco_subset(path_to_folder, extent):
     """
@@ -183,14 +179,14 @@ def gebco_subset(path_to_folder, extent):
     all_lat = gebco['lat'][:]
     all_lon = gebco['lon'][:]
 
-    SW_indices = [argnearest(all_lon,extent[2]),argnearest(all_lat,extent[0])]
-    NE_indices = [argnearest(all_lon,extent[3]),argnearest(all_lat,extent[1])]
+    SW_indices = [argnearest(all_lon, extent[2]), argnearest(all_lat, extent[0])]
+    NE_indices = [argnearest(all_lon, extent[3]), argnearest(all_lat, extent[1])]
 
-    lon_selec = all_lon[SW_indices[0]:NE_indices[0]+1]
-    lat_selec = all_lat[SW_indices[1]:NE_indices[1]+1]
+    lon_selec = all_lon[SW_indices[0]:NE_indices[0] + 1]
+    lat_selec = all_lat[SW_indices[1]:NE_indices[1] + 1]
 
-    bath_lat_selec = gebco['elevation'][np.logical_and(all_lat>=lat_selec[0],all_lat<=lat_selec[-1])][:]
-    bath_selec = bath_lat_selec[:,np.logical_and(all_lon>=lon_selec[0],all_lon<=lon_selec[-1])]
+    bath_lat_selec = gebco['elevation'][np.logical_and(all_lat >= lat_selec[0], all_lat <= lat_selec[-1])][:]
+    bath_selec = bath_lat_selec[:, np.logical_and(all_lon >= lon_selec[0], all_lon <= lon_selec[-1])]
     "print GEBCO bathy fetch successful"
     return np.array(lon_selec), np.array(lat_selec), np.array(bath_selec)
 
@@ -207,7 +203,8 @@ def emod_subset(path_to_files, extent):
     tiles = Path(path_to_files).joinpath().glob("*.dtm")
     tiles_check = Path(path_to_files).joinpath().glob("*.dtm")
     if not list(tiles_check):
-        print('No netcdf files found in supplied folder. Check that it is a complete folder path (not a file). Aborting')
+        print(
+            'No netcdf files found in supplied folder. Check that it is a complete folder path (not a file). Aborting')
         exit(1)
     unorder_list = []
     for item in tiles:
@@ -243,30 +240,30 @@ def emod_subset(path_to_files, extent):
         this_tile = tile_extents.loc[tile]
         for vertex in range(4):
             if np.logical_and(
-                vertices[vertex][0] > this_tile.loc["West"],
-                vertices[vertex][0] < this_tile.loc["East"],
+                    vertices[vertex][0] > this_tile.loc["West"],
+                    vertices[vertex][0] < this_tile.loc["East"],
             ):
                 if np.logical_and(
-                    vertices[vertex][1] > this_tile.loc["South"],
-                    vertices[vertex][1] < this_tile.loc["North"],
+                        vertices[vertex][1] > this_tile.loc["South"],
+                        vertices[vertex][1] < this_tile.loc["North"],
                 ):
                     relevant_tiles.append(tile)
                     break
     # Sort the tiles by column first ready for patching
-    relevant_tiles.sort(key=lambda x:x[-1])
+    relevant_tiles.sort(key=lambda x: x[-1])
     tile_paths = []
     for tile in relevant_tiles:
         tile_paths.append(tile_list[tile_name == tile][0])
 
     print(f"Bathymetry data contained in {len(relevant_tiles)} files. Fetching...")
-    
+
     # Extracting the relevant bathymetry data from the first tile
     tile = xr.open_dataset(tile_paths[0])
     lon_tile = tile.COLUMNS[np.logical_and(tile.COLUMNS > W, tile.COLUMNS < E)]
     lat_tile = tile.LINES[np.logical_and(tile.LINES > S, tile.LINES < N)]
     bathy_tile = tile.DEPTH.sel(COLUMNS=lon_tile, LINES=lat_tile)
     # Now to add bathy data from more tiles if needed
-    
+
     if len(relevant_tiles) > 1:
         base_tile = relevant_tiles[0]
         print(f"base tile {base_tile}")
@@ -287,13 +284,15 @@ def emod_subset(path_to_files, extent):
                 )
                 lat_tile = np.concatenate((add_lat_no_overlap, lat_tile))
                 bathy_tile = np.concatenate((add_bathy, bathy_tile))
-                
+
             elif next_tile[0] == base_tile[0]:
                 # If tiles are from more than one column, initiates a new column
                 print("start new column...")
                 column_base_tile = xr.open_dataset(tile_paths[i + 1])
-                column_lon_tile = column_base_tile.COLUMNS[np.logical_and(column_base_tile.COLUMNS > np.nanmax(lon_tile), column_base_tile.COLUMNS < E)]
-                column_lat_tile = column_base_tile.LINES[np.logical_and(column_base_tile.LINES > S, column_base_tile.LINES < N)]
+                column_lon_tile = column_base_tile.COLUMNS[
+                    np.logical_and(column_base_tile.COLUMNS > np.nanmax(lon_tile), column_base_tile.COLUMNS < E)]
+                column_lat_tile = column_base_tile.LINES[
+                    np.logical_and(column_base_tile.LINES > S, column_base_tile.LINES < N)]
                 column_bathy_tile = column_base_tile.DEPTH.sel(COLUMNS=column_lon_tile, LINES=column_lat_tile)
             else:
                 # Adds to the new column
@@ -311,12 +310,12 @@ def emod_subset(path_to_files, extent):
             if not 'column_lat_tile' in locals():
                 # Exit if we haven't started a second column yet( happens with zero overlap row)
                 continue
-            if np.logical_and(next_tile[1] != base_tile[1],len(lat_tile) == len(column_lat_tile)):
+            if np.logical_and(next_tile[1] != base_tile[1], len(lat_tile) == len(column_lat_tile)):
                 # Combines the columns
                 print("combining columns")
                 add_lon_no_overlap = column_lon_tile[column_lon_tile > np.nanmax(lon_tile)]
-                lon_tile = np.concatenate((lon_tile,add_lon_no_overlap))
-                bathy_tile = np.concatenate((bathy_tile,column_bathy_tile),axis=1)
+                lon_tile = np.concatenate((lon_tile, add_lon_no_overlap))
+                bathy_tile = np.concatenate((bathy_tile, column_bathy_tile), axis=1)
     if type(lon_tile) != np.ndarray:
         lon_tile = lon_tile.values
     if type(lat_tile) != np.ndarray:
@@ -329,3 +328,4 @@ def emod_subset(path_to_files, extent):
 
 if __name__ == '__main__':
     main()
+
