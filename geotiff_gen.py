@@ -21,7 +21,7 @@ def main():
     tiff_maker()
 
 
-def tiff_maker(filename='', lon=[], lat=[], bathy=[], extent=[], bathy_folder_path='', theme='', min_depth=0):
+def tiff_maker(filename='', lon=[], lat=[], bathy=[], extent=[], bathy_folder_path='', theme='', min_depth=0, bathy_nc=False):
     """
     Interactive function for generating geotiffs from one of three sources. Can be called empty for
     interactive use or you can specify all the arguments you will nedd with the kwargs
@@ -56,8 +56,8 @@ def tiff_maker(filename='', lon=[], lat=[], bathy=[], extent=[], bathy_folder_pa
             gebco_path = bathy_folder_path
         else:
             gebco_path = input(
-                r"Enter the path to the folder with your GEBCO netcdf (something like GEBCO_2014_2D.nc) ")
-        lon, lat, bathy = gebco_subset(gebco_path, extent)
+                r"Enter the path to the folder with your GEBCO netcdf (Jus the folder, not the file itself) ")
+        lon, lat, bathy = gebco_subset(gebco_path, extent, bathy_nc=bathy_nc)
         bathy_to_tiff(lon, lat, bathy, filename, theme, min_depth)
         return
     if bathy_selec.lower() == 'e':
@@ -161,7 +161,7 @@ def argnearest(items, pivot):
             return i
 
 
-def gebco_subset(path_to_folder, extent):
+def gebco_subset(path_to_folder, extent, bathy_nc):
     """
     Extracts bathy data from a global GEBCO .nc file from an area specified by the use
     :param path_to_folder: string of path to the folder, specified by user
@@ -187,6 +187,20 @@ def gebco_subset(path_to_folder, extent):
     bath_lat_selec = gebco['elevation'][np.logical_and(all_lat >= lat_selec[0], all_lat <= lat_selec[-1])][:]
     bath_selec = bath_lat_selec[:, np.logical_and(all_lon >= lon_selec[0], all_lon <= lon_selec[-1])]
     "print GEBCO bathy fetch successful"
+    if bathy_nc=True:
+        ## To save our bathymetry data
+        xlon = xr.IndexVariable(dims="longitude", data=lon_selec, attrs={"units": "degrees_east"})
+        xlat = xr.IndexVariable(dims="latitude", data=lat_selec, attrs={"units": "degrees_north"})
+    
+        bathy_arr = xr.DataArray(
+            bath_selec,
+            name="bathymetry",
+            attrs={"units": "metres"},
+            dims=("latitude", "longitude"),
+            coords={"longitude": xlon, "latitude": xlat},
+        )
+        bathy_arr.to_netcdf('bathy_subset.nc')
+        print('bathy subset written')
     return np.array(lon_selec), np.array(lat_selec), np.array(bath_selec)
 
 
