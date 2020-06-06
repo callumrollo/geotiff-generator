@@ -187,7 +187,7 @@ def gebco_subset(path_to_folder, extent, bathy_nc):
     bath_lat_selec = gebco['elevation'][np.logical_and(all_lat >= lat_selec[0], all_lat <= lat_selec[-1])][:]
     bath_selec = bath_lat_selec[:, np.logical_and(all_lon >= lon_selec[0], all_lon <= lon_selec[-1])]
     "print GEBCO bathy fetch successful"
-    if bathy_nc=True:
+    if bathy_nc==True:
         ## To save our bathymetry data
         xlon = xr.IndexVariable(dims="longitude", data=lon_selec, attrs={"units": "degrees_east"})
         xlat = xr.IndexVariable(dims="latitude", data=lat_selec, attrs={"units": "degrees_north"})
