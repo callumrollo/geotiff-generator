@@ -11,7 +11,6 @@ import os
 import numpy as np
 import pandas as pd
 import xarray as xr
-from netCDF4 import Dataset
 import copy
 from pathlib import Path
 from osgeo import gdal, osr
@@ -56,7 +55,7 @@ def tiff_maker(filename='', lon=[], lat=[], bathy=[], extent=[], bathy_folder_pa
             gebco_path = bathy_folder_path
         else:
             gebco_path = input(
-                r"Enter the path to the folder with your GEBCO netcdf (Jus the folder, not the file itself) ")
+                r"Enter the path to the folder with your GEBCO netcdf ")
         lon, lat, bathy = gebco_subset(gebco_path, extent, bathy_nc=bathy_nc)
         bathy_to_tiff(lon, lat, bathy, filename, theme, min_depth)
         return
@@ -170,38 +169,22 @@ def gebco_subset(path_to_folder, extent, bathy_nc):
     :return: numpy arrays of lon, lat and bathymetry
     """
     print('Fetching GEBCO data...')
-    path_to_gebco = list(Path(path_to_folder).joinpath().glob("*.nc"))
-    if not path_to_gebco:
-        print('No netcdf files found in supplied folder. Check it is a complete folder path (not a file). Aborting')
-        exit(1)
-    gebco = Dataset(path_to_gebco[0], "r", format="NETCDF4")
-    all_lat = gebco['lat'][:]
-    all_lon = gebco['lon'][:]
-
-    SW_indices = [argnearest(all_lon, extent[2]), argnearest(all_lat, extent[0])]
-    NE_indices = [argnearest(all_lon, extent[3]), argnearest(all_lat, extent[1])]
-
-    lon_selec = all_lon[SW_indices[0]:NE_indices[0] + 1]
-    lat_selec = all_lat[SW_indices[1]:NE_indices[1] + 1]
-
-    bath_lat_selec = gebco['elevation'][np.logical_and(all_lat >= lat_selec[0], all_lat <= lat_selec[-1])][:]
-    bath_selec = bath_lat_selec[:, np.logical_and(all_lon >= lon_selec[0], all_lon <= lon_selec[-1])]
+    if path_to_folder.is_file():
+        gebco = xr.open_dataset(path_to_folder)
+    else:
+        path_to_gebco = list(Path(path_to_folder).joinpath().glob("*.nc"))
+        if not path_to_gebco:
+            print('No netcdf files found in location supplied. Check that you pointed to a .nc file or a folder containing one. Aborting')
+            exit(1)
+        gebco = xr.open_dataset(path_to_gebco[0])
+    print("Subsettting GEBCO data")
+    subset = gebco.sel(lon=slice(extent[2], extent[3]), lat=slice(extent[0], extent[1]))
     "print GEBCO bathy fetch successful"
     if bathy_nc==True:
         ## To save our bathymetry data
-        xlon = xr.IndexVariable(dims="longitude", data=lon_selec, attrs={"units": "degrees_east"})
-        xlat = xr.IndexVariable(dims="latitude", data=lat_selec, attrs={"units": "degrees_north"})
-    
-        bathy_arr = xr.DataArray(
-            bath_selec,
-            name="bathymetry",
-            attrs={"units": "metres"},
-            dims=("latitude", "longitude"),
-            coords={"longitude": xlon, "latitude": xlat},
-        )
-        bathy_arr.to_netcdf('bathy_subset.nc')
-        print('bathy subset written')
-    return np.array(lon_selec), np.array(lat_selec), np.array(bath_selec)
+        subset.to_netcdf(Path(os.getcwd())/'bathy_subset.nc')
+        print('bathy subset written at ' + str(Path(os.getcwd())/'bathy_subset.nc'))
+    return np.array(subset.lon), np.array(subset.lat), np.array(subset.elevation)
 
 
 def emod_subset(path_to_files, extent):
