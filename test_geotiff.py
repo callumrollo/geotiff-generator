@@ -7,7 +7,7 @@ path_to_emod = '/media/callum/storage/Documents/global_datasets/emod_netcdf/'
 
 
 def test_gebco_subset():
-    lon_sub, lat_sub, bathy_sub = gebco_subset(path_to_gebco, [0, 1, -10, -9])
+    lon_sub, lat_sub, bathy_sub = gebco_subset(path_to_gebco, [0, 1, -10, -9], True)
     assert math.isclose(lon_sub[0], -10, rel_tol=1e-2)
     assert math.isclose(lat_sub[-1], 1, rel_tol=1e-2)
     assert math.isclose(np.nanmean(bathy_sub), -4800, rel_tol=1e-1)
