@@ -24,10 +24,10 @@ def main():
     tiff_maker()
 
 
-def tiff_maker(filename='', lon=[], lat=[], bathy=[], extent=[], bathy_folder_path='', theme='', min_depth=0, bathy_nc=False):
+def tiff_maker(filename='', lon=[], lat=[], bathy=[], extent=[], bathy_type='', bathy_folder_path='', theme='', min_depth='usr', bathy_nc=False):
     """
     Interactive function for generating geotiffs from one of three sources. Can be called empty for
-    interactive use or you can specify all the arguments you will nedd with the kwargs
+    interactive use or you can specify all the arguments you will nedd with the kwargs as follows
 
     :param filename: filename for the geotiff (do not specify an extension) always required
     :param lon: numpy array or list of lon (if using own data)
@@ -35,7 +35,11 @@ def tiff_maker(filename='', lon=[], lat=[], bathy=[], extent=[], bathy_folder_pa
     :param bathy: numpy array or 2D list. dimensions must match lon and lat (if using own data)
     :param extent: list with four items which are extent of desired geotiff [South, North, West, East]
     e.g. [49. 50.5, -5, 2] (if using gebco or emodnet)
+    :param bathy_type: 'e' for emodnet, 'g' for GEBCO
     :param bathy_folder_path: path to the folder with your bathymetry netCDFs (if using GEBCO or emodnet)
+    :param theme: colour theme of the geotiff 'y' for dark 'n' for light 'g' for greyscale
+    :param min_depth: the minimum depth, all water shallower than this coloured red
+    :param bathy_nc set to True to write a netcdf file fo the subset bathymetry (currently supports only GEBCO)
     """
     if not filename:
         filename = input("Enter a name for your bathymetry geotiff ")
@@ -48,8 +52,10 @@ def tiff_maker(filename='', lon=[], lat=[], bathy=[], extent=[], bathy_folder_pa
         extent.append(float(input("Enter the northern limit of your desired bathy ")))
         extent.append(float(input("Enter the western limit of your desired bathy ")))
         extent.append(float(input("Enter the eastern limit of your desired bathy ")))
-
-    bathy_selec = input("What bathy are you using? [g]ebco, [e]modnet or [o]ther ")
+    if bathy_type in ['e', 'g']:
+        bathy_selec=bathy_type
+    else:
+        bathy_selec = input("What bathy are you using? [g]ebco, [e]modnet or [o]ther ")
     if bathy_selec.lower() == 'o':
         print("call  tiff_maker with your lon, lat and bathy arrays\n"
               "e.g. tiff_generator(filename='my_cool_tiff_pic', lon=<lon_array>, lat=<lat_array>, bathy=<bathy_array>)")
@@ -138,7 +144,7 @@ def bathy_to_tiff(lon_vals, lat_vals, bathy_vals, filename, theme, min_depth):
     if theme == 'g':
         r_pixels = g_pixels = b_pixels = 255 * (np.abs(bathy_vals / np.nanmin(bathy_vals)))
     else:
-        if not min_depth:
+        if type(min_depth) == str:
             print("What depth (m) would you like the shallow warning red set? (0 for no shallow warning) ")
             min_depth = float(input(""))
 
