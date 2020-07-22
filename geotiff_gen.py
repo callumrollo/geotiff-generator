@@ -8,12 +8,16 @@ Created on Fri Mar 29 16:35:59 2019
 An interactive script for making geotiff images from bathymetry data
 """
 import os
+from tkinter import Tk
+from tkinter.filedialog import askopenfilename, askdirectory
+from pathlib import Path
 import numpy as np
 import pandas as pd
 import xarray as xr
 import copy
 from pathlib import Path
 from osgeo import gdal, osr
+
 
 
 def main():
@@ -54,13 +58,28 @@ def tiff_maker(filename='', lon=[], lat=[], bathy=[], extent=[], bathy_folder_pa
         if bathy_folder_path:
             gebco_path = bathy_folder_path
         else:
-            gebco_path = input(
-                r"Enter the path to the folder with your GEBCO netcdf ")
+            selection = input(r"Enter the path to a GEBCO netcdf file. Press 'f' for a file selector app ")
+            if selection.lower() == "f":
+                print("take me to your file")
+                Tk().withdraw() 
+                gebco_path = askopenfilename()
+            else:  
+                gebco_path = selection
+        print("Using GEBCO bathy from " + gebco_path)
         lon, lat, bathy = gebco_subset(gebco_path, extent, bathy_nc=bathy_nc)
         bathy_to_tiff(lon, lat, bathy, filename, theme, min_depth)
         return
     if bathy_selec.lower() == 'e':
-        emod_path = input(r"Enter the path to the folder with your emodnet file(s) (E3.dtm etc) ")
+        if bathy_folder_path:
+            emod_path = bathy_folder_path
+        else:
+            selection = input(r"Enter the path to the folder with your emodnet file(s) (E3.dtm etc). Press 'f' for a folder selector app  ")
+            if selection.lower() == "f":
+                print("take me to your folder")
+                Tk().withdraw() 
+                emod_path = askdirectory()
+            else:  
+                emod_path = selection
         lon, lat, bathy = emod_subset(emod_path, extent)
         bathy_to_tiff(lon, lat, bathy, filename, theme, min_depth)
         return
@@ -160,7 +179,7 @@ def argnearest(items, pivot):
             return i
 
 
-def gebco_subset(path_to_folder, extent, bathy_nc):
+def gebco_subset(path_to_folder_str, extent, bathy_nc):
     """
     Extracts bathy data from a global GEBCO .nc file from an area specified by the use
     :param path_to_folder: string of path to the folder, specified by user
@@ -169,6 +188,7 @@ def gebco_subset(path_to_folder, extent, bathy_nc):
     :return: numpy arrays of lon, lat and bathymetry
     """
     print('Fetching GEBCO data...')
+    path_to_folder = Path(path_to_folder_str)
     if path_to_folder.is_file():
         gebco = xr.open_dataset(path_to_folder)
     else:
@@ -196,7 +216,8 @@ def emod_subset(path_to_files, extent):
     e.g. [49. 50.5, -5, 2] (if using gebco or emodnet)
     :return: numpy arrays of lon, lat and bathymetry
     """
-    tiles = Path(path_to_files).joinpath().glob("*.dtm")
+    print("Searching recursivly for emod *.dtm bathy files in " + path_to_files)
+    tiles = Path(path_to_files).joinpath().glob("**/*.dtm")
     tiles_check = Path(path_to_files).joinpath().glob("*.dtm")
     if not list(tiles_check):
         print(
