@@ -3,7 +3,7 @@
 A python script to generate a geotiff image from bathymetry data. This geotiff can be uploaded to piloting software tools to give an idea of the depth of water.
 
 **Test it out on Binder's cloud hosting**
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/callumrollo/geotiff-generator/18b66b96b3aa266a7531092ec34a562c33e11368) may take a few minutes to load
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/callumrollo/geotiff-generator/master) may take a few minutes to load
 
 When Binder has loaded, click on demo-try-me.ipynb
 
