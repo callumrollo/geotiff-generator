@@ -10,3 +10,4 @@ dependencies:
    - gdal
    - jupyter
    - ipython
+   - pillow
