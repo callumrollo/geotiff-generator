@@ -8,6 +8,7 @@ Created on Fri Mar 29 16:35:59 2019
 An interactive script for making geotiff images from bathymetry data
 """
 import os
+import sys
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename, askdirectory
 from pathlib import Path
@@ -52,6 +53,12 @@ def tiff_maker(filename='', lon=[], lat=[], bathy=[], extent=[], bathy_type='', 
         extent.append(float(input("Enter the northern limit of your desired bathy ")))
         extent.append(float(input("Enter the western limit of your desired bathy ")))
         extent.append(float(input("Enter the eastern limit of your desired bathy ")))
+    if extent[1]<extent[0]:
+        print(f"northern limit ({extent[1]}) must be greater than southern limit ({extent[0]}). Aborting")
+        sys.exit()
+    if extent[3]<extent[2]:
+        print(f"eastern limit ({extent[3]}) must be greater than western limit ({extent[2]}). Aborting")
+        sys.exit()
     if bathy_type in ['e', 'g']:
         bathy_selec=bathy_type
     else:
@@ -224,11 +231,11 @@ def emod_subset(path_to_files, extent):
     """
     print("Searching recursivly for emod *.dtm bathy files in " + path_to_files)
     tiles = Path(path_to_files).joinpath().glob("**/*.dtm")
-    tiles_check = Path(path_to_files).joinpath().glob("*.dtm")
+    tiles_check = Path(path_to_files).joinpath().glob("**/*.dtm")
     if not list(tiles_check):
         print(
             'No netcdf files found in supplied folder. Check that it is a complete folder path (not a file). Aborting')
-        exit(1)
+        sys.exit()
     unorder_list = []
     for item in tiles:
         unorder_list.append(str(item))
@@ -277,7 +284,9 @@ def emod_subset(path_to_files, extent):
     tile_paths = []
     for tile in relevant_tiles:
         tile_paths.append(tile_list[tile_name == tile][0])
-
+    if len(relevant_tiles)==0:
+        print("Area specified has no overlap with EMODnet bathy supplied. Aborting")
+        sys.exit()
     print(f"Bathymetry data contained in {len(relevant_tiles)} files. Fetching...")
 
     # Extracting the relevant bathymetry data from the first tile
