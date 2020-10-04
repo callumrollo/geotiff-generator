@@ -200,6 +200,11 @@ def gebco_subset(path_to_folder_str, extent, bathy_nc):
     e.g. [49. 50.5, -5, 2] (if using gebco or emodnet)
     :return: numpy arrays of lon, lat and bathymetry
     """
+    extent = list(extent)
+    if extent[2]>180:
+        extent[2] = extent[2] - 360
+    if extent[3]>180:
+        extent[3] = extent[3] - 360
     print('Fetching GEBCO data...')
     path_to_folder = Path(path_to_folder_str)
     if path_to_folder.is_file():
